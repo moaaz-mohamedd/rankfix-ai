@@ -72,7 +72,10 @@ def count_words(soup: BeautifulSoup) -> int:
     """
 
     for script_or_style in soup(["script", "style", "noscript"]):
-        script_or_style.extract()
+        script_or_style.extract() ## remove these tags from the soup to avoid counting their content
+## VERY IMPORTANT: this function adjust the same soup object
+## Which means that in future if u wanna extract any smth from script or style tags u have first to adjust this point.
+## it also count the menu and foter words not only the main content, but for MVP it's ok.
 
     text = soup.get_text(separator=" ", strip=True)
     words = text.split()

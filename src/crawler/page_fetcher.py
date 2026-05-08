@@ -2,7 +2,7 @@ import requests
 from typing import Dict, Optional
 
 
-def fetch_page(url: str, timeout: int = 10) -> Dict[str, Optional[str]]:
+def fetch_page(url: str, timeout: int = 10) -> Dict[str, Optional[any]]:
     """
     Fetch a web page and return useful response data.
 

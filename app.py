@@ -5,6 +5,7 @@ from src.utils.validators import normalize_domain
 from src.crawler.sitemap_parser import get_urls_from_sitemap
 from src.crawler.page_fetcher import fetch_page
 from src.extractor.seo_extractor import extract_seo_data
+from src.auditor.rules_engine import audit_seo_data, summarize_issues
 
 
 st.set_page_config(
@@ -16,7 +17,7 @@ st.set_page_config(
 st.title("🔎 RankFix AI - SEO Site Auditor")
 
 st.write(
-    "Enter a website domain and the tool will extract URLs from its sitemap, then analyze basic SEO tags."
+    "Enter a website domain and the tool will extract URLs from its sitemap, analyze SEO tags, and detect on-page SEO issues."
 )
 
 domain_input = st.text_input(
@@ -46,7 +47,7 @@ if st.button("Start SEO Audit"):
             if not urls:
                 st.error("No URLs found. The website may not have a public sitemap.")
             else:
-                st.success(f"Found {len(urls)} URLs. Starting SEO extraction...")
+                st.success(f"Found {len(urls)} URLs. Starting SEO audit...")
 
                 results = []
 
@@ -62,10 +63,9 @@ if st.button("Start SEO Audit"):
                         )
 
                         seo_data["status_code"] = page_response["status_code"]
-                        results.append(seo_data)
 
                     else:
-                        results.append({
+                        seo_data = {
                             "url": url,
                             "status_code": page_response["status_code"],
                             "title": None,
@@ -81,16 +81,61 @@ if st.button("Start SEO Audit"):
                             "total_images": 0,
                             "images_missing_alt": 0,
                             "error": page_response["error"]
-                        })
+                        }
+
+                    issues = audit_seo_data(seo_data)
+                    issue_summary = summarize_issues(issues)
+
+                    seo_data.update(issue_summary)
+
+                    results.append(seo_data)
 
                     progress_bar.progress((index + 1) / len(urls))
 
                 df = pd.DataFrame(results)
 
-                st.success("SEO extraction completed.")
+                st.success("SEO audit completed.")
+
+                st.subheader("Audit Summary")
+
+                total_pages = len(df)
+                total_issues = int(df["issues_count"].sum())
+                total_high = int(df["high_issues"].sum())
+                total_medium = int(df["medium_issues"].sum())
+                total_low = int(df["low_issues"].sum())
+
+                col1, col2, col3, col4, col5 = st.columns(5)
+
+                col1.metric("Pages", total_pages)
+                col2.metric("Total Issues", total_issues)
+                col3.metric("High", total_high)
+                col4.metric("Medium", total_medium)
+                col5.metric("Low", total_low)
 
                 st.subheader("SEO Audit Results")
-                st.dataframe(df, use_container_width=True)
+
+                display_columns = [
+                    "url",
+                    "status_code",
+                    "title",
+                    "title_length",
+                    "meta_description_length",
+                    "h1_count",
+                    "h2_count",
+                    "word_count",
+                    "images_missing_alt",
+                    "issues_count",
+                    "high_issues",
+                    "medium_issues",
+                    "low_issues",
+                    "issues",
+                    "recommendations"
+                ]
+
+                st.dataframe(
+                    df[display_columns],
+                    use_container_width=True
+                )
 
         except ValueError as error:
             st.error(str(error))

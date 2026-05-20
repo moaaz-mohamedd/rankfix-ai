@@ -6,6 +6,7 @@ from src.crawler.sitemap_parser import get_urls_from_sitemap
 from src.crawler.page_fetcher import fetch_page
 from src.extractor.seo_extractor import extract_seo_data
 from src.auditor.rules_engine import audit_seo_data, summarize_issues
+from src.reports.excel_exporter import create_excel_report
 
 
 st.set_page_config(
@@ -17,7 +18,7 @@ st.set_page_config(
 st.title("🔎 RankFix AI - SEO Site Auditor")
 
 st.write(
-    "Enter a website domain and the tool will extract URLs from its sitemap, analyze SEO tags, and detect on-page SEO issues."
+    "Enter a website domain and the tool will extract URLs from its sitemap, analyze SEO tags, detect on-page SEO issues, and export an Excel report."
 )
 
 domain_input = st.text_input(
@@ -63,6 +64,7 @@ if st.button("Start SEO Audit"):
                         )
 
                         seo_data["status_code"] = page_response["status_code"]
+                        seo_data["error"] = None
 
                     else:
                         seo_data = {
@@ -119,22 +121,39 @@ if st.button("Start SEO Audit"):
                     "status_code",
                     "title",
                     "title_length",
+                    "meta_description",
                     "meta_description_length",
+                    "h1",
                     "h1_count",
                     "h2_count",
+                    "canonical",
+                    "robots_meta",
                     "word_count",
+                    "total_images",
                     "images_missing_alt",
                     "issues_count",
                     "high_issues",
                     "medium_issues",
                     "low_issues",
                     "issues",
-                    "recommendations"
+                    "recommendations",
+                    "error"
                 ]
 
+                report_df = df[display_columns]
+
                 st.dataframe(
-                    df[display_columns],
+                    report_df,
                     use_container_width=True
+                )
+
+                excel_file = create_excel_report(report_df)
+
+                st.download_button(
+                    label="Download Excel Report",
+                    data=excel_file,
+                    file_name="rankfix_ai_seo_audit.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
 
         except ValueError as error:

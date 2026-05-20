@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from typing import Dict, List, Optional
+from src.utils.text_cleaner import decode_url
 
 
 def get_text_or_none(element) -> Optional[str]:
@@ -126,17 +127,19 @@ def extract_seo_data(url: str, html: str) -> Dict:
     word_count = count_words(soup)
 
     return {
-        "url": url,
-        "title": title,
-        "title_length": len(title) if title else 0,
-        "meta_description": meta_description,
-        "meta_description_length": len(meta_description) if meta_description else 0,
-        "h1_count": len(h1_tags),
-        "h1": h1_tags[0] if h1_tags else None,
-        "h2_count": len(h2_tags),
-        "canonical": canonical,
-        "robots_meta": robots_meta,
-        "word_count": word_count,
-        "total_images": image_data["total_images"],
-        "images_missing_alt": image_data["images_missing_alt"]
-    }
+    "url": url,
+    "decoded_url": decode_url(url),
+    "title": title,
+    "title_length": len(title) if title else 0,
+    "meta_description": meta_description,
+    "meta_description_length": len(meta_description) if meta_description else 0,
+    "h1_count": len(h1_tags),
+    "h1": h1_tags[0] if h1_tags else None,
+    "h2_count": len(h2_tags),
+    "canonical": canonical,
+    "decoded_canonical": decode_url(canonical) if canonical else None,
+    "robots_meta": robots_meta,
+    "word_count": word_count,
+    "total_images": image_data["total_images"],
+    "images_missing_alt": image_data["images_missing_alt"]
+}

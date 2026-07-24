@@ -1,8 +1,10 @@
-from io import BytesIO
+from io import BytesIO # this is used to create an in memory file not in the disk and return it as bytes for streamlit to download
 
 import pandas as pd
+
+## openpyxl is used to create and style(like align and wrap_text and font) the excel file in memory
 from openpyxl.styles import Font, PatternFill, Alignment
-from openpyxl.utils import get_column_letter
+from openpyxl.utils import get_column_letter # convert column index to letter for styling and adjusting width
 
 
 def create_excel_report(df: pd.DataFrame) -> bytes:
@@ -13,9 +15,9 @@ def create_excel_report(df: pd.DataFrame) -> bytes:
     It creates the Excel file in memory so Streamlit can download it directly.
     """
 
-    output = BytesIO()
+    output = BytesIO() ## Create an in-memory bytes buffer to hold the Excel file data
 
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+    with pd.ExcelWriter(output, engine="openpyxl") as writer: # create an excel writer in the in memory buffer we made above
         sheet_name = "SEO Audit"
 
         df.to_excel(
@@ -23,7 +25,7 @@ def create_excel_report(df: pd.DataFrame) -> bytes:
             index=False,
             sheet_name=sheet_name
         )
-
+        # workbook is a refrence to the entire excel file we made, and worksheet is a refrence to the specific sheet
         workbook = writer.book
         worksheet = writer.sheets[sheet_name]
 

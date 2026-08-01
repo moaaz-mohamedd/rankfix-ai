@@ -32,3 +32,22 @@ def normalize_domain(domain: str) -> str:
     normalized = f"{parsed.scheme}://{parsed.netloc}"
 
     return normalized.rstrip("/") ## if the domain ends with a slash, remove it to maintain consistency (e.g., https://example.com/ -> https://example.com)
+
+def extract_domain(url: str) -> str:
+    """
+    Extract clean domain from URL.
+
+    Example:
+    https://www.example.com/page
+    ->
+    example.com
+    """
+
+    parsed = urlparse(url)
+
+    domain = parsed.netloc.lower()
+
+    return domain.replace(
+        "www.",
+        ""
+    )
